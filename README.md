@@ -84,8 +84,17 @@ $env:HF_HUB_OFFLINE="1"
 ## 引用
 
 参考文献 [R1]–[R27] 见主论文文末；BibTeX 见 `references.bib`。
-若引用本工作，请引用主论文与本仓库（作者信息待补）。
+若引用本工作，请引用主论文与本仓库：
+
+> asdfg273. (2026). 基于 Titans 架构的记忆塔：小模型长时记忆的实测研究.
+> https://github.com/asdfg273/memory-tower
 
 ## 许可
 
-代码建议 MIT、文本建议 CC BY 4.0（**由作者最终指定**）。
+| 内容 | 协议 | 文件 |
+| --- | --- | --- |
+| 代码（`scripts/*.py`） | MIT | [`LICENSE`](LICENSE) |
+| 文字（论文、报告、README） | CC BY 4.0 | [`LICENSE-TEXT`](LICENSE-TEXT) |
+| 实验数据（`numbers/`、`data/`） | 随代码，MIT | [`LICENSE`](LICENSE) |
+
+引用本仓库建议使用：`asdfg273 (2026). 基于 Titans 架构的记忆塔：小模型长时记忆的实测研究. GitHub: asdfg273/memory-tower`

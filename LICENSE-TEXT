@@ -1,0 +1,28 @@
+# 文字许可：CC BY 4.0
+
+本仓库中的**文字作品**——`PAPER_TITANS_TOWER.md`、`PAPER_FULL_LOG.md`、`reports/*.md`、
+`README.md`——采用**知识共享 署名 4.0 国际许可协议（CC BY 4.0）**授权。
+
+您可以自由地：
+
+- **共享** —— 以任何媒介或格式复制、发行本作品
+- **演绎** —— 修改、转换或以本作品为基础进行创作，用于任何目的（包括商业目的）
+
+惟须遵守以下条款：
+
+- **署名** —— 必须给出适当的署名、提供指向本许可协议的链接，并说明是否作出了修改。
+  可以任何合理的方式署名，但不得暗示许可人认可您或您的使用。
+- **不得增加额外限制** —— 不得适用法律术语或技术措施，从而限制他人依据本许可协议行使权利。
+
+协议摘要：<https://creativecommons.org/licenses/by/4.0/deed.zh-hans>
+完整法律文本：<https://creativecommons.org/licenses/by/4.0/legalcode.zh-hans>
+
+---
+
+**注意**：本仓库中的**代码**（`scripts/*.py` 等）不适用本协议，而采用 MIT 许可，见 [`LICENSE`](LICENSE)。
+`numbers/`、`data/` 下的实验数据随代码，同 MIT 条款。
+
+建议的引用格式：
+
+> asdfg273. (2026). 基于 Titans 架构的记忆塔：小模型长时记忆的实测研究.
+> https://github.com/asdfg273/memory-tower
