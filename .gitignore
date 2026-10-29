@@ -1,0 +1,26 @@
+# 运行环境与缓存
+venv/
+__pycache__/
+*.pyc
+.venv/
+
+# 模型权重与检查点（体积大，不入库）
+checkpoints_tower/
+models/
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# 实验临时产物
+_ab_tmp/
+
+# 数据库（含运行时状态；示例数据见 data/memory_selfdesc.json）
+*.db
+*.db.bak-*
+*.db-journal
+*.db-wal
+
+# 密钥
+.env
+*.key

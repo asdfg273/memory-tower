@@ -1,0 +1,4 @@
+﻿# 统一换行，避免 Windows/Linux 之间的 CRLF 噪声
+* text=auto eol=lf
+*.png binary
+*.jpg binary

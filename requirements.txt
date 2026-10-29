@@ -1,0 +1,46 @@
+# ============================================================================
+# 记忆写入控制器（Memory Write Controller）依赖
+# ----------------------------------------------------------------------------
+# 安装（Windows / Linux 通用）：
+#     python -m venv venv
+#     # Windows:  venv\Scripts\activate
+#     # Linux:    source venv/bin/activate
+#     pip install -r requirements.txt
+#
+# ⚠️ RTX 5060（Blackwell, 计算能力 sm_120）必须使用 **CUDA 12.8 及以上**的
+#    PyTorch 轮子，否则会报 "no kernel image is available for execution"。
+#    本项目的实测环境：
+#         torch 2.11.0+cu128 / transformers 4.5x / Python 3.12 / RTX 5060 Laptop 8GB
+#
+#    若 `pip install torch` 装成了 CPU 版或旧 CUDA 版，请显式安装：
+#        pip install torch --index-url https://download.pytorch.org/whl/cu128
+#
+# ============================================================================
+
+# ---- 深度学习框架 ----
+torch>=2.7.0            # sm_120 支持从 2.7 开始；本项目实测 2.11.0+cu128
+transformers>=4.53.0    # SmolLM2 需要较新的架构注册
+datasets>=3.0.0         # preprocess.py 的 save_to_disk / load_from_disk
+accelerate>=1.0.0       # 设备放置 / 混合精度辅助
+safetensors>=0.4.0      # 权重安全序列化（transformers 依赖）
+
+# ---- 数据处理 ----
+numpy>=1.26.0
+tqdm>=4.66.0
+
+# ---- DeepSeek API（数据生成；兼容 OpenAI 接口）----
+openai>=1.40.0
+
+# ---- 可选：评估报告中的额外统计（evaluate.py 已内置实现，不装也能跑）----
+scikit-learn>=1.4.0
+
+# ----------------------------------------------------------------------------
+# 说明
+# ----------------------------------------------------------------------------
+# * 本项目**不需要** peft/LoRA：135M 模型在 8GB 显存上直接全量微调。
+# * 不需要 GPT / OpenAI 官方模型：generate_data.py 只调用 DeepSeek
+#   （base_url=https://api.deepseek.com），API Key 从环境变量 DEEPSEEK_API_KEY 读取。
+# * memory_service.py / rules.py 只依赖 Python 标准库（sqlite3 / re / json），
+#   因此规则与存储层可以在没有 torch 的环境里单独跑自检：
+#       python rules.py --selftest
+#       python memory_service.py --demo
