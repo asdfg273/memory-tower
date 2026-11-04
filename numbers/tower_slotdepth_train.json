@@ -1,0 +1,50 @@
+{
+  "experiment": "T132 训练投影版槽位塔（换掉 T131 的截断代理）",
+  "date": "2026-11-04",
+  "script": "tools_tower_slotdepth_train.py",
+  "protocol": {
+    "n_train": 400,
+    "n_test": 96,
+    "split": "实体池与名称池各切两半，训练/测试互不相交",
+    "inner": "闭式岭回归 alpha=(KK^T+lam I)^-1 Z（可微）",
+    "outer": "交叉熵：读出后认出自己那条值",
+    "lam": 0.01,
+    "steps": 400,
+    "lr": 0.003,
+    "query_verbatim": "箱子{q}的密码是什么？只回答密码本身。",
+    "query_para_light": "{q}的箱子密码是什么？只回答密码本身。",
+    "query_para": "我想知道{q}那个箱子里存的密码，直接告诉我密码就行。"
+  },
+  "results": {
+    "48": {
+      "L1_S0": {"verbatim": 0.958, "para_light": 0.031, "para": 0.01},
+      "L1_S8": {"verbatim": 1.0, "para_light": 0.323, "para": 0.031},
+      "L2_S8": {"verbatim": 1.0, "para_light": 0.073, "para": 0.062},
+      "L4_S8": {"verbatim": 0.812, "para_light": 0.01, "para": 0.031}
+    },
+    "96": {
+      "L1_S0": {"verbatim": 1.0, "para_light": 0.083, "para": 0.01},
+      "L1_S8": {"verbatim": 1.0, "para_light": 0.396, "para": 0.042},
+      "L2_S8": {"verbatim": 1.0, "para_light": 0.229, "para": 0.073},
+      "L4_S8": {"verbatim": 0.927, "para_light": 0.01, "para": 0.0}
+    }
+  },
+  "align_variant_d48": {
+    "note": "额外要求 P(改写键) 与 P(原文键) 对齐，align_weight=0.5",
+    "L1_S0": {"verbatim": 0.958, "para_light": 0.125, "para": 0.01},
+    "L1_S8": {"verbatim": 1.0, "para_light": 0.094, "para": 0.01},
+    "L2_S8": {"verbatim": 0.844, "para_light": 0.021, "para": 0.01},
+    "L4_S8": {"verbatim": 0.094, "para_light": 0.01, "para": 0.01}
+  },
+  "headline": {
+    "trained_beats_truncation": "d=48 无槽位臂 verbatim 0.767（T131 截断）→ 0.958（真训练）；d=96 → 1.000",
+    "paraphrase_still_dead": "重度改写 ≤0.073，轻度改写最高 0.396；深度不帮忙，L4 反而崩",
+    "alignment_hurts": "naive 对齐把键空间压扁，verbatim 与 para_light 双降",
+    "root_cause": "编码器不变性问题：改写句在冻结的 7B 里就是另一个向量，2048→d 的线性投影补不回语义等价"
+  },
+  "caveat": [
+    "400 训练 / 96 测试，规模小；每个臂单独训练一套投影。",
+    "测试集仅 verbatim/改写两种模板各一，未做多样改写。",
+    "槽位为固定 one-hot 地址，未学习；学习地址可能改变结论。"
+  ]
+}

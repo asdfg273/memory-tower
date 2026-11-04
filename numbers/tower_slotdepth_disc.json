@@ -1,0 +1,42 @@
+{
+  "experiment": "T133 判别式联合训练 + 查询侧扩展（两条改写补救）",
+  "date": "2026-11-04",
+  "script": "tools_tower_slotdepth_train.py --disc",
+  "protocol": {
+    "n_train": 400,
+    "n_test": 96,
+    "split": "训练/测试实体与名称互不相交",
+    "disc": "原文键与改写键一起进交叉熵，同一答案两个入口，不增加存储键",
+    "expand": "检索时把 verbatim / para_light / para 三种问法的打分矩阵取平均",
+    "steps": 400,
+    "lam": 0.01
+  },
+  "disc_results": {
+    "48": {
+      "L1_S0": {"verbatim": 0.917, "para_light": 0.083, "para": 0.01, "expand": 0.417},
+      "L1_S8": {"verbatim": 1.0, "para_light": 0.448, "para": 0.01, "expand": 0.969},
+      "L2_S8": {"verbatim": 1.0, "para_light": 0.104, "para": 0.042, "expand": 0.146},
+      "L4_S8": {"verbatim": 0.823, "para_light": 0.062, "para": 0.062, "expand": 0.229}
+    },
+    "96": {
+      "L1_S0": {"verbatim": 1.0, "para_light": 0.094, "para": 0.01, "expand": 0.906},
+      "L1_S8": {"verbatim": 1.0, "para_light": 0.135, "para": 0.01, "expand": 0.219},
+      "L2_S8": {"verbatim": 1.0, "para_light": 0.198, "para": 0.021, "expand": 0.354},
+      "L4_S8": {"verbatim": 0.802, "para_light": 0.042, "para": 0.031, "expand": 0.062}
+    }
+  },
+  "compare_baseline_t132": {
+    "48/L1_S8_para_light": [0.323, 0.448],
+    "96/L1_S8_para_light": [0.396, 0.135],
+    "48/L1_S0_verbatim": [0.958, 0.917]
+  },
+  "headline": {
+    "disc_does_not_rescue": "重度改写 ≤0.062；轻度改写仅 d=48/L1_S8 一格改善（0.323→0.448），换维度反而变差",
+    "expand_is_noise_averaging": "融合值≈verbatim 减噪声：原文视图在场就接近满分，不在场就塌",
+    "conclusion": "语义不变性不在 2048→d 线性投影的可表达范围内；塔是实体键驱动的名称寻址"
+  },
+  "caveat": [
+    "expand 使用了三种问法同时打分，是上界式设定：真实场景里用户只给其中一种。",
+    "单次 seed、400 步；判别式训练的方差可见（同臂跨维度结果不一致）。"
+  ]
+}

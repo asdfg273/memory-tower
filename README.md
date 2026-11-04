@@ -16,6 +16,7 @@
 | 6 | 容量有**闭式**解法 | 460 步梯度写入 → 闭式求解：N=1280 从 0.624 → **0.988**；300 槽 65 s → **0.26 s** | §5.5、§5.10 |
 | 7 | 扩容**不产生新能力** | 36 格阶梯被一条两参数曲线压平（RMSE **0.013**） | §5.11 |
 | 8 | 塔**不能当检索层**，杠杆在条目形态与打分器 | 零重叠改写 hit@1 塔 .111 = 平台 .111；自描述化 .111→**0.333**；idf 打分 .605→**0.658** | §5.12 |
+| 9 | **容量与深度都不是瓶颈**，语义不变性在编码器里就丢了 | 交付 m=256 下 480 条全中（1.000）；堆到 8 层零收益；改写从 .767 训到 .958 但重度改写仍 **.062**，判别式训练最多 .448 | §5.14 |
 
 一句话定位：**它是一个可从文本挂载的记忆运行时，不是一个 RAG 卖点，更不是"更强的记忆结构"。**
 
@@ -27,9 +28,10 @@ output/
 ├─ PAPER_TITANS_TOWER.md         ← 主论文（含参考文献 [R1]–[R27]）
 ├─ PAPER_FULL_LOG.md             ← 原始实验记录（330 KB，未整理，仅存档）
 ├─ references.bib                ← 27 条参考文献的 BibTeX
-├─ reports/                      ← 四份关键报告
+├─ reports/                      ← 五份关键报告
 │   ├─ memory_retrieval_ab.md    ← 检索层对照实验全过程（C 阶段 / A′ / 自描述化 / embedding）
 │   ├─ TOWER_MECHANISM.md        ← 塔的机制与结构
+│   ├─ TOWER_SLOTDEPTH.md        ← 容量与不变性：T131–T133 三次端到端实验
 │   ├─ INSTRUMENT_FAILURES.md    ← 仪器失效清单（本项目最可迁移的产出）
 │   └─ HANDOFF.md                ← 交接摘要
 ├─ requirements.txt              ← 依赖（CUDA 12.8 轮子说明见文件头注释）
@@ -38,13 +40,19 @@ output/
 │   ├─ tools_memory_questions.py ← 给记忆生成问句键（负结果实验，保留以证伪）
 │   ├─ tools_memory_selfdesc.py  ← 记忆条目自描述化迁移器（带备份 + 版本化）
 │   ├─ tools_tower_memory.py     ← 塔记忆：CLI / HTTP / MCP 三入口
+│   ├─ tools_tower_slotdepth.py  ← §5.14 T131：槽位塔 + m 截断扫描
+│   ├─ tools_tower_slotdepth_train.py ← §5.14 T132/T133：真训练投影 + 判别式训练
+│   ├─ tools_tower_vs_rag.py     ← 事实池与问法模板（上面两个脚本的依赖）
 │   ├─ tower_runtime.py          ← 塔运行时（验收自检）
 │   ├─ tools_tower_T3.py         ← 快速权重核（tower_runtime 的依赖）
 │   ├─ longctx.py                ← 分块 prefill 长上下文路径
 │   ├─ common.py                 ← 共用工具（键/值编码、字面相似度等）
 │   └─ memory_service.py         ← 产品侧 SQLite 检索层（idf 加权 1+2 元）
-├─ numbers/
-│   └─ memory_ab_platform.json   ← 检索层实验的机器产物（论文数字来源）
+├─ numbers/                      ← 机器产物（论文数字来源）
+│   ├─ memory_ab_platform.json   ← 检索层实验
+│   ├─ tower_slotdepth.json      ← §5.14 T131（容量 / m 截断）
+│   ├─ tower_slotdepth_train.json← §5.14 T132（训练投影）
+│   └─ tower_slotdepth_disc.json ← §5.14 T133（判别式 + 查询侧扩展）
 └─ data/
     └─ memory_selfdesc.json      ← 28 条真实记忆 → 自描述句 的映射（实验数据集）
 ```
@@ -63,6 +71,10 @@ $env:HF_HUB_OFFLINE="1"
 
 # 3) 记忆条目自描述化（干跑先看 diff，确认后加 --apply）
 .\venv\Scripts\python.exe tools_memory_selfdesc.py
+
+# 4) 容量与不变性：T131 截断扫描（≈2 min）/ T132 训练投影（≈6 min，需 GPU）
+.\venv\Scripts\python.exe tools_tower_slotdepth.py --ns 480 --dims 256,96,48,24,16
+.\venv\Scripts\python.exe tools_tower_slotdepth_train.py --dims 48,96
 ```
 
 产物写到 `_ab_tmp/` 与 `reports/repro/`；`data/` 需要可写（SQLite）。
@@ -80,6 +92,8 @@ $env:HF_HUB_OFFLINE="1"
 2. `PAPER.md`（原始记录）早期章节描述的是另一套检索实现（`nya_memory` + BGE-M3），
    与实际运行的 `memory_service.py` 有出入——以 `PAPER_TITANS_TOWER.md` 为准。
 3. 检索实验规模很小：28 条记忆 × 38 条手写 query，`hit@1` 的单条波动就是 ±0.026。
+4. §5.14 只试了"冻结编码器 + 线性投影"这一族。**微调编码器**与**查询侧 LLM 扩展**都没跑，
+   所以"塔永远读不出改写"不成立，成立的只是"线性投影救不了"；且 T132/T133 只有单 seed。
 
 ## 引用
 
