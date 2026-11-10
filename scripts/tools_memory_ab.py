@@ -237,6 +237,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap.add_argument("--emb-model", default="text-embedding-nomic-embed-text-v1.5")
     ap.add_argument("--emb-cache", default=os.path.join("_ab_tmp", "memory_emb.json"))
     ap.add_argument("--no-emb", action="store_true")
+    ap.add_argument("--no-keys", action="store_true", help="清空问法键，用来对照 record_similarity 的增益")
     args = ap.parse_args(argv)
 
     rewrite = load_rewrite(args.rewrite)
@@ -277,6 +278,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     # 打开副本：data/memory.db 在本机以读写方式打开会偶发 unable to open database file
     svc = MemoryService(_tmp_path("memory.db"))
+    # 这里评的是"检索质量"，不是"过期策略"：副本里全部续期，否则 28 条早已过期、
+    # get_relevant 会返回空（platform 组会假变成 0.000）
+    with svc._conn:
+        svc._conn.execute("UPDATE memories SET expires_at = NULL WHERE deleted_at IS NULL")
+        if args.no_keys:
+            svc._conn.execute("UPDATE memories SET keys = '[]'")
     from tools_tower_memory import TowerMemory
 
     tower_path = _tmp_path("tower.jsonl")

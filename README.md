@@ -28,31 +28,54 @@ output/
 ├─ PAPER_TITANS_TOWER.md         ← 主论文（含参考文献 [R1]–[R27]）
 ├─ PAPER_FULL_LOG.md             ← 原始实验记录（330 KB，未整理，仅存档）
 ├─ references.bib                ← 27 条参考文献的 BibTeX
-├─ reports/                      ← 五份关键报告
-│   ├─ memory_retrieval_ab.md    ← 检索层对照实验全过程（C 阶段 / A′ / 自描述化 / embedding）
+├─ reports/                      ← 九份关键报告
+│   ├─ memory_retrieval_ab.md    ← 检索层对照实验全过程（C 阶段 / A′ / 自描述化 / embedding / 问法键 / TTL）
 │   ├─ TOWER_MECHANISM.md        ← 塔的机制与结构
 │   ├─ TOWER_SLOTDEPTH.md        ← 容量与不变性：T131–T133 三次端到端实验
+│   ├─ TOWER_GATE.md             ← 门控互见 / MLP 选择器 / 两跳，以及 E2E 与口语边界（§2c–§2f）
+│   ├─ TOWER_DEPTH.md            ← 深度塔：深度是多项式滤波，不是容量
+│   ├─ ALBUM_TOWER.md            ← SD1.5 相册身份一致性：免训练注入 + 小投影头 + 真人数据
+│   ├─ TOWER_VS_RAG.md           ← 与 RAG 的全维度对照
 │   ├─ INSTRUMENT_FAILURES.md    ← 仪器失效清单（本项目最可迁移的产出）
 │   └─ HANDOFF.md                ← 交接摘要
 ├─ requirements.txt              ← 依赖（CUDA 12.8 轮子说明见文件头注释）
 ├─ scripts/                      ← 关键脚本快照（权威版本在仓库根目录）
+│   ├─ memory_service.py         ← 产品侧 SQLite 检索层（idf 加权 1+2 元；KEYS_ENABLED 开关）
 │   ├─ tools_memory_ab.py        ← 检索层 5 臂对照 + 分组统计
+│   ├─ tools_memory_keypolicy.py ← 问法键六种打法的对照（结论：默认关）
+│   ├─ tools_memory_keys.py      ← 把问法回填进 memories.keys
+│   ├─ tools_memory_renew.py     ← 记忆续期（TTL 到期会让检索静默变空）
 │   ├─ tools_memory_questions.py ← 给记忆生成问句键（负结果实验，保留以证伪）
 │   ├─ tools_memory_selfdesc.py  ← 记忆条目自描述化迁移器（带备份 + 版本化）
 │   ├─ tools_tower_memory.py     ← 塔记忆：CLI / HTTP / MCP 三入口
+│   ├─ tools_tower_gate.py       ← G1 门控 / G2 MLP 选择器 / G3 两跳 + 代数事实
+│   ├─ tools_tower_head_probe.py ← H 阶段：冻结塔 + 线性读取头
+│   ├─ tools_tower_e2e.py        ← 端到端：两个必要条件（检索 top-1、值必须是答案）
+│   ├─ tools_tower_keyexp.py     ← 多问法键 + max-over-keys
+│   ├─ tools_tower_alias.py      ← 边界：名词化对得上、口语对不上
+│   ├─ tools_tower_valuecheck.py ← 真实文本上塔的值复现（更正"值在 span 外"）
+│   ├─ tools_tower_depth.py      ← 深度塔：1/2/4 层与槽位地址乘法
 │   ├─ tools_tower_slotdepth.py  ← §5.14 T131：槽位塔 + m 截断扫描
 │   ├─ tools_tower_slotdepth_train.py ← §5.14 T132/T133：真训练投影 + 判别式训练
 │   ├─ tools_tower_vs_rag.py     ← 事实池与问法模板（上面两个脚本的依赖）
+│   ├─ tools_album_tower.py      ← SD1.5 相册：免训练注入六臂
+│   ├─ tools_album_head.py       ← 小投影头 / 连接器（合成角色）
+│   ├─ tools_album_head_real.py  ← 小投影头（CelebA 真人）
 │   ├─ tower_runtime.py          ← 塔运行时（验收自检）
 │   ├─ tools_tower_T3.py         ← 快速权重核（tower_runtime 的依赖）
 │   ├─ longctx.py                ← 分块 prefill 长上下文路径
-│   ├─ common.py                 ← 共用工具（键/值编码、字面相似度等）
-│   └─ memory_service.py         ← 产品侧 SQLite 检索层（idf 加权 1+2 元）
+│   └─ common.py                 ← 共用工具（键/值编码、字面相似度等）
 ├─ numbers/                      ← 机器产物（论文数字来源）
 │   ├─ memory_ab_platform.json   ← 检索层实验
 │   ├─ tower_slotdepth.json      ← §5.14 T131（容量 / m 截断）
 │   ├─ tower_slotdepth_train.json← §5.14 T132（训练投影）
-│   └─ tower_slotdepth_disc.json ← §5.14 T133（判别式 + 查询侧扩展）
+│   ├─ tower_slotdepth_disc.json ← §5.14 T133（判别式 + 查询侧扩展）
+│   ├─ tower_depth.json          ← 深度塔（容量 / 条件数 / 组合 / λ 对照）
+│   ├─ tower_e2e.json            ← 端到端五指标 × 三规模
+│   ├─ tower_head_probe.json     ← H 阶段五臂
+│   ├─ album_tower.json          ← 相册六臂 + 逐图分数
+│   ├─ album_head.json           ← 小投影头（合成）
+│   └─ album_head_real.json      ← 小投影头（CelebA）
 └─ data/
     └─ memory_selfdesc.json      ← 28 条真实记忆 → 自描述句 的映射（实验数据集）
 ```

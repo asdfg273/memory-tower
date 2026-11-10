@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS memories (
     user_id     TEXT NOT NULL,
     task_id     TEXT,
     raw_source  TEXT NOT NULL,
+    keys        TEXT NOT NULL DEFAULT '[]',   -- 检索用的问法键（JSON 数组），见 record_similarity
     memory_type TEXT NOT NULL,
     scope       TEXT NOT NULL,
     created_at  REAL NOT NULL,
@@ -114,10 +115,14 @@ CREATE TABLE IF NOT EXISTS memory_versions (
 
 # 业务字段（用于生成 SQL，避免手写重复列名）
 BUSINESS_FIELDS = (
-    "user_id", "task_id", "raw_source", "memory_type", "scope",
+    "user_id", "task_id", "raw_source", "keys", "memory_type", "scope",
     "created_at", "updated_at", "expires_at", "confidence", "version",
     "deleted_at", "metadata",
 )
+
+# 问法键（keys 列）是否参与检索打分。默认关闭：实测负收益（见 record_similarity
+# 的 docstring，38 条 query 上 pooled hit@3 .868→.789、para hit@1 .556→.444）。
+KEYS_ENABLED = False
 
 
 # ---------------------------------------------------------------------------
@@ -138,6 +143,7 @@ class MemoryRecord:
     updated_at: float
     expires_at: Optional[float]
     confidence: float
+    keys: List[str] = field(default_factory=list)
     version: int = 1
     deleted_at: Optional[float] = None
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -162,6 +168,7 @@ class MemoryRecord:
         d = {
             "memory_id": self.memory_id, "user_id": self.user_id, "task_id": self.task_id,
             "raw_source": self.raw_source, "memory_type": self.memory_type, "scope": self.scope,
+            "keys": self.keys,
             "created_at": self.created_at, "updated_at": self.updated_at,
             "expires_at": self.expires_at, "confidence": self.confidence,
             "version": self.version, "deleted_at": self.deleted_at,
@@ -176,12 +183,17 @@ class MemoryRecord:
             meta = json.loads(meta_raw) if meta_raw else {}
         except (TypeError, json.JSONDecodeError):
             meta = {"_raw_metadata": meta_raw}
+        keys_raw = row["keys"] if "keys" in row.keys() else None
+        try:
+            keys = [str(k) for k in json.loads(keys_raw)] if keys_raw else []
+        except (TypeError, json.JSONDecodeError):
+            keys = []
         return cls(
             memory_id=row["memory_id"], user_id=row["user_id"], task_id=row["task_id"],
             raw_source=row["raw_source"], memory_type=row["memory_type"], scope=row["scope"],
             created_at=float(row["created_at"]), updated_at=float(row["updated_at"]),
             expires_at=(float(row["expires_at"]) if row["expires_at"] is not None else None),
-            confidence=float(row["confidence"]), version=int(row["version"]),
+            confidence=float(row["confidence"]), keys=keys, version=int(row["version"]),
             deleted_at=(float(row["deleted_at"]) if row["deleted_at"] is not None else None),
             metadata=meta,
         )
@@ -288,7 +300,14 @@ class MemoryService:
             pass
         if init:
             self._conn.executescript(SCHEMA)
+            self._migrate()
             self._conn.commit()
+
+    def _migrate(self) -> None:
+        """把旧库补齐到当前 schema（目前只有 keys 一列）。"""
+        cols = {r["name"] for r in self._conn.execute("PRAGMA table_info(memories)")}
+        if "keys" not in cols:
+            self._conn.execute("ALTER TABLE memories ADD COLUMN keys TEXT NOT NULL DEFAULT '[]'")
 
     # ---------------- 生命周期 ----------------
     def close(self) -> None:
@@ -388,6 +407,7 @@ class MemoryService:
         ttl_seconds: Optional[int] = None,
         metadata: Optional[Dict[str, Any]] = None,
         memory_id: Optional[str] = None,
+        keys: Optional[Sequence[str]] = None,
         _conn_managed: bool = False,
     ) -> str:
         """新建一条记忆，返回 memory_id。
@@ -409,12 +429,14 @@ class MemoryService:
             memory_type=memory_type, scope=scope, created_at=ts, updated_at=ts,
             expires_at=expiry, confidence=confidence, version=1, deleted_at=None,
             metadata=dict(metadata or {}),
+            keys=[normalize_text(k) for k in (keys or []) if normalize_text(k)],
         )
         try:
             self._conn.execute(
                 f"""INSERT INTO memories (memory_id, {', '.join(BUSINESS_FIELDS)})
                     VALUES ({', '.join(['?'] * (len(BUSINESS_FIELDS) + 1))})""",
                 (record.memory_id, record.user_id, record.task_id, record.raw_source,
+                 json.dumps(record.keys, ensure_ascii=False),
                  record.memory_type, record.scope, record.created_at, record.updated_at,
                  record.expires_at, record.confidence, record.version, record.deleted_at,
                  json.dumps(record.metadata, ensure_ascii=False)),
@@ -691,6 +713,35 @@ class MemoryService:
         idf1, idf2 = self._idf_tables()
         return text_score_idf(query, text, idf1, idf2)
 
+    def record_similarity(self, query: str, record: "MemoryRecord",
+                          use_keys: Optional[bool] = None) -> float:
+        """一条记忆对查询的相关度。默认只看事实正文，问法键默认不参与。
+
+        问法键（keys 列）实测**负收益**，故默认关闭（KEYS_ENABLED=False）。同一批 38 条
+        query、同一份库、k=5 的对照（_ab_tmp/_key_policy.py）：
+
+            策略            pooled hit@1/hit@3   keep    para
+            只用正文             .658 / .868      .750    .556
+            键取最大(原设计)      .632 / .789      .800    .444
+            键打八五折           .632 / .842      .800    .444
+            键打七折             .632 / .868      .800    .444
+            正文<0.15 才看键      .605 / .816      .750    .444
+
+        机制：7B 生成的问句偏通用（"系统启动前要做什么准备"），对零重叠改写（para 组）
+        反而更容易假匹配，把真目标挤下去；keep 组 top-1 涨的 5 个点抵不过 para 组掉 11 点。
+        键仍有价值的前提是它来自**真实用户提问**，而不是模型替用户猜。
+        """
+        if use_keys is None:
+            use_keys = KEYS_ENABLED
+        best = self.text_similarity(query, record.raw_source)
+        if not use_keys:
+            return best
+        for key in record.keys:
+            s = self.text_similarity(query, key)
+            if s > best:
+                best = s
+        return best
+
     def find_by_text(
         self,
         text: str,
@@ -704,7 +755,7 @@ class MemoryService:
                AND (user_id = ? OR ? IS NULL)""",
             (user_id, user_id),
         ).fetchall()
-        scored = [(MemoryRecord.from_row(r), self.text_similarity(text, r["raw_source"]))
+        scored = [(MemoryRecord.from_row(r), self.record_similarity(text, MemoryRecord.from_row(r)))
                   for r in rows]
         scored = [(rec, s) for rec, s in scored if s >= min_score]
         scored.sort(key=lambda x: x[1], reverse=True)
@@ -743,8 +794,7 @@ class MemoryService:
                 continue
             sim = 0.0
             if query:
-                idf1, idf2 = self._idf_tables()
-                sim = text_score_idf(query, rec.raw_source, idf1, idf2)
+                sim = self.record_similarity(query, rec)
             score = (
                 0.55 * sim
                 + 0.20 * self.SCOPE_WEIGHT.get(rec.scope, 0.5)
@@ -787,6 +837,41 @@ class MemoryService:
         except sqlite3.Error as exc:
             self._conn.rollback()
             raise MemoryServiceError(f"清理过期记忆失败：{exc}") from exc
+        return ids
+
+    def renew(self, days: float = 30.0, memory_ids: Optional[Sequence[str]] = None,
+              user_id: Optional[str] = None) -> List[str]:
+        """给记忆续期：把 expires_at 推到现在 + days 天，返回被续期的 id。
+
+        为什么需要：TTL 到期后 `get_relevant` 会静默跳过这些记录，产品表现为"突然
+        什么都不记得了"——2026-11-10 就踩过一次（28 条研究纪律全部过期，检索恒空）。
+        续期比"删了重写"合适：版本链保留，审计上看得出来只是延寿。
+        """
+        ts = now_ts()
+        new_exp = ts + float(days) * 86400.0
+        where = ["deleted_at IS NULL"]
+        params: List[Any] = []
+        if memory_ids:
+            where.append("memory_id IN (%s)" % ",".join("?" * len(memory_ids)))
+            params.extend(list(memory_ids))
+        if user_id:
+            where.append("user_id = ?")
+            params.append(user_id)
+        rows = self._conn.execute(
+            f"SELECT memory_id FROM memories WHERE {' AND '.join(where)}", params).fetchall()
+        ids = [str(r["memory_id"]) for r in rows]
+        try:
+            for mid in ids:
+                self._conn.execute(
+                    "UPDATE memories SET expires_at=?, updated_at=? WHERE memory_id=?",
+                    (new_exp, ts, mid),
+                )
+                rec = MemoryRecord.from_row(self._get_row(mid))
+                self._record_version(rec, "renew", f"续期 {days:g} 天")
+            self._conn.commit()
+        except sqlite3.Error as exc:
+            self._conn.rollback()
+            raise MemoryServiceError(f"续期失败：{exc}") from exc
         return ids
 
     def stats(self) -> Dict[str, Any]:

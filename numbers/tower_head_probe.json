@@ -1,0 +1,15 @@
+{
+ "arms": {
+  "hard": {"heldout_top1": 0.25},
+  "oracle": {"heldout_top1": 0.825},
+  "q": {"heldout_top1": 0.125},
+  "qr": {"heldout_top1": 0.2},
+  "qrc": {"heldout_top1": 0.275}
+ },
+ "candidates": 66,
+ "n_entities": 60,
+ "n_facts": 120,
+ "retrieval_top1": 0.475,
+ "seconds": 11.2,
+ "note": "tools_tower_head_probe.py 产出；retrieval_top1 为问句→事实 top-1，脚本另打印"
+}

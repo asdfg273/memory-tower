@@ -1,0 +1,45 @@
+{
+ "meta": {
+  "script": "tools_album_tower.py",
+  "size": 512,
+  "steps": 20,
+  "mid_block_tokens": 64,
+  "mid_ts": 300,
+  "lam": 0.01,
+  "tower_weight": 0.5,
+  "n": 6,
+  "chunk": "sks person, short black hair, blue jacket",
+  "baseline_note": "CLIP-B/32 反向基准：同一张图 1.0000，不同角色 0.5210；因此 0.52→1.00 才是有效量程",
+  "pilot_256": "同脚本 256×256 在本机产出条带状噪声（SD1.5 非原生分辨率），该轮数字作废，仅保留结论：必须在 512 上测"
+ },
+ "selfcheck": {
+  "identity_same_image": 1.0,
+  "identity_other_char": 0.5210,
+  "copy_arm_strength": 0.15,
+  "copy_arm_identity": 0.9867
+ },
+ "arms": {
+  "none":      {"id_cos": 0.6879, "clip_t": 0.3441, "diversity_l1": 68.68, "sec_per_img": 9.56, "ref_tokens": 0},
+  "copy":      {"id_cos": 0.9867, "clip_t": 0.2735, "diversity_l1": 4.96,  "sec_per_img": 1.99, "ref_tokens": 0},
+  "img2img":   {"id_cos": 0.8986, "clip_t": 0.2864, "diversity_l1": 15.11, "sec_per_img": 5.94, "ref_tokens": 0},
+  "raw":       {"id_cos": 0.6902, "clip_t": 0.3427, "diversity_l1": 68.49, "sec_per_img": 9.58, "ref_tokens": 64},
+  "tower":     {"id_cos": 0.6901, "clip_t": 0.3395, "diversity_l1": 67.48, "sec_per_img": 9.35, "ref_tokens": 64},
+  "writeback": {"id_cos": 0.6850, "clip_t": 0.3421, "diversity_l1": 66.91, "sec_per_img": 9.79, "ref_tokens": 64}
+ },
+ "per_image": {
+  "none": [0.7873, 0.5849, 0.7800, 0.6307, 0.7841, 0.5604],
+  "copy": [0.9876, 0.9779, 0.9892, 0.9891, 0.9868, 0.9896],
+  "img2img": [0.8926, 0.8594, 0.9089, 0.8944, 0.9046, 0.9318],
+  "raw": [0.8289, 0.6047, 0.7612, 0.6411, 0.7317, 0.5736],
+  "tower": [0.7778, 0.5847, 0.8133, 0.6278, 0.7744, 0.5629],
+  "writeback": [0.7778, 0.5786, 0.8067, 0.6083, 0.7760, 0.5627]
+ },
+ "verdict": {
+  "H1_lift_over_none_ge_0.05": false,
+  "H1_detail": "raw +0.0023、tower +0.0022，比 0.05 门槛低一个数量级",
+  "H2_tower_ge_raw_and_faster_10pct": false,
+  "H2_detail": "tower 0.6901 vs raw 0.6902（−0.0001）；每张快 0.23s（9.35 vs 9.58，+2.4%），远不到 10%",
+  "H3_writeback_ge_tower_plus_0.03": false,
+  "H3_detail": "writeback 0.6850 < tower 0.6901（−0.0051），多样性 66.91 < 67.48"
+ }
+}

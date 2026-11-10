@@ -1,0 +1,43 @@
+{
+ "experiment": "A'' 真实人脸数据（CelebA）训练连接器",
+ "script": "tools_album_head_real.py",
+ "dataset": {
+  "source": "hf://datasets/flwrlabs/celeba/img_align+identity+attr/test-00000-of-00003.parquet",
+  "access": "datasets streaming, 700 rows, grouped by celeb_id",
+  "identities": 6, "images_per_identity": 8,
+  "train_ids": ["train_0", "train_1", "train_2", "train_3"],
+  "heldout_ids": ["heldout_4", "heldout_5"],
+  "celeb_ids": {"train_0": 4930, "train_1": 4931, "train_2": 4943, "train_3": 4973,
+                "heldout_4": 4978, "heldout_5": 4992},
+  "identity_separation_clip": {"same_identity_range": [0.86, 0.93], "cross_identity_max": 0.60}
+ },
+ "config": {"size": 512, "steps": 1200, "lr": 0.001, "n_ctx": 8, "d_hid": 768,
+            "head_params": 9064704, "mim_strength": 0.75, "pairs": 28,
+            "frozen": ["unet", "vae", "text_encoder"]},
+ "preregistered": {"H5": "留出身份 CLIP-I 比 none 高 >= 0.10 且多样性 >= 40",
+                   "H6": "训练身份 CLIP-I 比 none 高 >= 0.15"},
+ "results": [
+  {"id": "train_0", "split": "train", "head": 0.4987, "none": 0.4369, "delta": 0.0618},
+  {"id": "train_1", "split": "train", "head": 0.4853, "none": 0.4445, "delta": 0.0408},
+  {"id": "train_2", "split": "train", "head": 0.4280, "none": 0.4241, "delta": 0.0039},
+  {"id": "train_3", "split": "train", "head": 0.4464, "none": 0.4044, "delta": 0.0420},
+  {"id": "heldout_4", "split": "heldout", "head": 0.5179, "none": 0.4884, "delta": 0.0295},
+  {"id": "heldout_5", "split": "heldout", "head": 0.5679, "none": 0.5090, "delta": 0.0589}
+ ],
+ "aggregate": {"head_mean": 0.4906, "none_mean": 0.4512, "delta": 0.0394,
+               "heldout_delta_mean": 0.0442, "train_delta_mean": 0.0371,
+               "diversity_head": [57.17, 56.91, 61.84, 58.25, 57.68, 57.55],
+               "diversity_none": 72.88},
+ "head_output_similarity_cross_identity": {"range": [0.9875, 0.9992],
+   "compare_to_A_prime": "A' 为 0.9998-1.0000（完全塌陷）"},
+ "verdict": {"H5": false, "H6": false,
+   "what_changed": "塌陷从 1.0000 降到 0.9875-0.9992，出现弱身份调制，偶发可见相似",
+   "bottleneck": "数据规模：IP-Adapter 用 LAION 十万级同人对；本实验 28 对",
+   "product_options": ["预训练 IP-Adapter（零训练，1 张参考图）",
+                        "每角色 LoRA / textual inversion（3-5 张图）"]},
+ "artifacts": {"summary": "_ab_tmp/album_head_real/summary.json",
+               "log": "_ab_tmp/real_train.log",
+               "eval_grid": "_ab_tmp/real_eval_grid.png",
+               "head": "_ab_tmp/album_head_real/head_real.pt"},
+ "repro": "HF_ENDPOINT=https://hf-mirror.com; venv\\Scripts\\python.exe tools_album_head_real.py --stage all --steps 1200"
+}

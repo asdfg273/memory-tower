@@ -1,0 +1,28 @@
+{
+ "experiment": "A' 小投影头（连接器）",
+ "script": "tools_album_head.py",
+ "config": {"size": 512, "steps": 400, "lr": 0.001, "head_params": 3307392,
+            "n_ctx": 4, "d_in": 1280, "d_hid": 768, "d_out": 768,
+            "mim_strength": 0.8, "frozen": ["unet", "vae", "text_encoder"],
+            "train_ids": ["A", "B"], "heldout_id": "C", "pairs": 12},
+ "preregistered": {"H4": "留出身份 CLIP-I >= 0.80 且多样性 >= 40"},
+ "results": [
+  {"id": "A", "split": "train", "clip_i": 0.5713, "diversity_l1": 60.55,
+   "per_image": [0.5098, 0.5892, 0.6134, 0.4495, 0.8028, 0.4632]},
+  {"id": "C", "split": "heldout", "clip_i": 0.5537, "diversity_l1": 60.5,
+   "per_image": [0.5741, 0.5662, 0.6035, 0.4637, 0.6408, 0.4740]}
+ ],
+ "head_output_similarity": {"cos_A_B": 1.0, "cos_A_C": 0.9998,
+   "norm": {"A": 24.099, "B": 24.151, "C": 17.949}},
+ "baselines": {"none_clip_i": 0.6879, "img2img0.6_clip_i": 0.8986,
+               "img2img0.6_diversity": 15.1, "none_diversity": 68.7},
+ "verdict": {"H4": false,
+   "mechanism": "头输出对 A/B/C 余弦 0.9998-1.0，塌成常数偏置，忽略参考图",
+   "not_capacity": "3.3M 参数足以表达身份；损失 400 步平稳说明无可学信号",
+   "cause": "12 对合成监督 + 4 token 对 eps 损失影响过小；需要同一个人几十到上百张跨场景图"},
+ "artifacts": {"train_log": "_ab_tmp/album_head/train.log",
+               "head": "_ab_tmp/album_head/head.pt",
+               "eval_grid": "_ab_tmp/album_head_eval/eval_grid.png",
+               "data_grid": "_ab_tmp/album_head/data_grid.png"},
+ "repro": "venv\\Scripts\\python.exe tools_album_head.py --stage all --steps 400"
+}

@@ -1,0 +1,47 @@
+{
+  "protocol": "tools_tower_depth.py —— 闭式岭回归 W=(KᵀK+λI)⁻¹KᵀZ；合成高斯键值；查询=存储键；top-1 余弦",
+  "m": 256,
+  "dv": 256,
+  "seeds": [0, 1, 2],
+  "lam_main": 0.01,
+  "capacity_lam_0p01": [
+    {"n": 64, "n_over_m": 0.25, "lin_L1": 1.0, "lin_L2": 1.0, "lin_L4": 1.0, "lin_L1_m512": 1.0, "norm_L4": 1.0, "slot_L1_S40": 1.0, "slot_L1_S160": 1.0, "slot_L4_S40": 1.0},
+    {"n": 128, "n_over_m": 0.5, "lin_L1": 1.0, "lin_L2": 1.0, "lin_L4": 1.0, "lin_L1_m512": 1.0, "norm_L4": 1.0, "slot_L1_S40": 1.0, "slot_L1_S160": 1.0, "slot_L4_S40": 1.0},
+    {"n": 256, "n_over_m": 1.0, "lin_L1": 1.0, "lin_L2": 1.0, "lin_L4": 0.1758, "lin_L1_m512": 1.0, "norm_L4": 1.0, "slot_L1_S40": 1.0, "slot_L1_S160": 1.0, "slot_L4_S40": 1.0},
+    {"n": 512, "n_over_m": 2.0, "lin_L1": 1.0, "lin_L2": 1.0, "lin_L4": 0.9648, "lin_L1_m512": 1.0, "norm_L4": 1.0, "slot_L1_S40": 1.0, "slot_L1_S160": 1.0, "slot_L4_S40": 1.0},
+    {"n": 1024, "n_over_m": 4.0, "lin_L1": 0.5911, "lin_L2": 0.987, "lin_L4": 0.9753, "lin_L1_m512": 1.0, "norm_L4": 0.9531, "slot_L1_S40": 1.0, "slot_L1_S160": 0.9896, "slot_L4_S40": 1.0},
+    {"n": 2048, "n_over_m": 8.0, "lin_L1": 0.0664, "lin_L2": 0.3711, "lin_L4": 0.7174, "lin_L1_m512": 1.0, "norm_L4": 0.5911, "slot_L1_S40": 0.9792, "slot_L1_S160": 0.7786, "slot_L4_S40": 1.0}
+  ],
+  "conditioning_lam_0p01": [
+    {"n": 64, "cond_A": 221.0, "w_norm2": 2.037},
+    {"n": 128, "cond_A": 285.1, "w_norm2": 3.31},
+    {"n": 256, "cond_A": 394.2, "w_norm2": 6.49},
+    {"n": 512, "cond_A": 30.5, "w_norm2": 2.697},
+    {"n": 1024, "cond_A": 8.6, "w_norm2": 1.301},
+    {"n": 2048, "cond_A": 4.3, "w_norm2": 0.792}
+  ],
+  "combo_cos_lam_0p01": [
+    {"k": 1, "lin_L1": 0.9978, "norm_L4": 0.574},
+    {"k": 2, "lin_L1": 0.9977, "norm_L4": 0.5836},
+    {"k": 4, "lin_L1": 0.9978, "norm_L4": 0.5788},
+    {"k": 8, "lin_L1": 0.9979, "norm_L4": 0.5836},
+    {"k": 16, "lin_L1": 0.9979, "norm_L4": 0.5886}
+  ],
+  "lam_control_0p10": {
+    "note": "同一批 N，只改 λ；证明 N≈m 处 lin_L4 的崩塌是正则化不足",
+    "rows": [
+      {"n": 256, "lin_L4": 0.9971, "lin_L1": 1.0, "norm_L4": 1.0},
+      {"n": 512, "lin_L4": 0.997, "lin_L1": 1.0, "norm_L4": 1.0},
+      {"n": 1024, "lin_L4": 0.9793, "lin_L1": 0.5557, "norm_L4": 0.9531},
+      {"n": 2048, "lin_L4": 0.716, "lin_L1": 0.0651, "norm_L4": 0.5895}
+    ]
+  },
+  "headline": {
+    "depth_is_capacity": false,
+    "depth_is_polynomial_filter": true,
+    "filter_gain_at_nm_8": "lin_L1 0.066 → lin_L4 0.717 (10.8×)",
+    "capacity_lever": "m（宽度）: m=512 单层在 N=2048 仍 1.000",
+    "depth_reliable_gain": "地址空间：slot_L4_S40 在 N=2048 仍 1.000，同地址数的 slot_L1_S160 只有 0.779",
+    "generalization": "0/9 臂表现出未见事实能力"
+  }
+}
