@@ -48,14 +48,14 @@
 ```
 README.md                     ← 本页（论文第一页）
 PAPER_TITANS_TOWER.md         ← 主论文（2868 行，七个边界结论 + 27 条参考文献）
-reports/                      ← 十一份关键报告（每份都带判据、数字、边界）
+reports/                      ← 十份关键报告（每份都带判据、数字、边界）
   INSTRUMENT_FAILURES.md      ← 仪器失效清单：100+ 轮实验里每个正读数都被下一轮作废过
   SESSION_RECALL.md           ← H11 真实会话检索 + §12.9 预注册验收
   ALBUM_TOWER.md              ← H9 扩散侧：注入 / 连接器 / 信道实验
   TEXT_MEMORY_AB.md           ← H10 文本侧七臂对照
   TOWER_MECHANISM.md / TOWER_DEPTH.md / TOWER_SLOTDEPTH.md / TOWER_GATE.md / TOWER_VS_RAG.md
   memory_retrieval_ab.md
-scripts/                      ← 26 个关键脚本快照（权威版本在作者仓库根目录）
+scripts/                      ← 34 个关键脚本快照（权威版本在作者仓库根目录）
   tools_session_recall_accept.py  ← §5.18.9 验收：四读出 × 三基线 + bootstrap + McNemar
   tools_tower_memory.py           ← 塔记忆运行时（CLI / HTTP / MCP 三入口）
   memory_service.py               ← 产品侧 SQLite 检索层（idf 加权 1+2 元）
