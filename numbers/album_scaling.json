@@ -1,0 +1,151 @@
+{
+ "size": 512,
+ "steps": 2000,
+ "n_imgs": 6,
+ "evals": {
+  "none": {
+   "mean_clip_i": 0.5128,
+   "per_id": {
+    "heldout_24": {
+     "clip_i": 0.5299,
+     "per_scene": [
+      0.5248,
+      0.5096,
+      0.5646,
+      0.5204
+     ]
+    },
+    "heldout_25": {
+     "clip_i": 0.4958,
+     "per_scene": [
+      0.498,
+      0.4707,
+      0.5213,
+      0.4932
+     ]
+    }
+   }
+  },
+  "n4": {
+   "mean_clip_i": 0.5266,
+   "per_id": {
+    "heldout_24": {
+     "clip_i": 0.5458,
+     "per_scene": [
+      0.5569,
+      0.5286,
+      0.5861,
+      0.5118
+     ]
+    },
+    "heldout_25": {
+     "clip_i": 0.5074,
+     "per_scene": [
+      0.524,
+      0.488,
+      0.5448,
+      0.4728
+     ]
+    }
+   }
+  },
+  "n12": {
+   "mean_clip_i": 0.5229,
+   "per_id": {
+    "heldout_24": {
+     "clip_i": 0.5412,
+     "per_scene": [
+      0.5125,
+      0.5416,
+      0.5715,
+      0.5391
+     ]
+    },
+    "heldout_25": {
+     "clip_i": 0.5045,
+     "per_scene": [
+      0.4934,
+      0.4912,
+      0.5338,
+      0.4997
+     ]
+    }
+   }
+  },
+  "n24": {
+   "mean_clip_i": 0.5248,
+   "per_id": {
+    "heldout_24": {
+     "clip_i": 0.5519,
+     "per_scene": [
+      0.5341,
+      0.5846,
+      0.561,
+      0.528
+     ]
+    },
+    "heldout_25": {
+     "clip_i": 0.4977,
+     "per_scene": [
+      0.5052,
+      0.4908,
+      0.5249,
+      0.4697
+     ]
+    }
+   }
+  },
+  "small": {
+   "mean_clip_i": 0.5411,
+   "per_id": {
+    "heldout_24": {
+     "clip_i": 0.5555,
+     "per_scene": [
+      0.5119,
+      0.5363,
+      0.6222,
+      0.5515
+     ]
+    },
+    "heldout_25": {
+     "clip_i": 0.5268,
+     "per_scene": [
+      0.4894,
+      0.503,
+      0.6127,
+      0.5021
+     ]
+    }
+   }
+  }
+ },
+ "scales": {
+  "4": {
+   "train_ids": 4,
+   "pairs": 20,
+   "params": 6889728,
+   "final_loss": 0.0957,
+   "mean_clip_i": 0.5266
+  },
+  "12": {
+   "train_ids": 12,
+   "pairs": 60,
+   "params": 6889728,
+   "final_loss": 0.1063,
+   "mean_clip_i": 0.5229
+  },
+  "24": {
+   "train_ids": 24,
+   "pairs": 120,
+   "params": 6889728,
+   "final_loss": 0.1037,
+   "mean_clip_i": 0.5248
+  }
+ },
+ "small_head": {
+  "d_hid": 384,
+  "params": 3153024,
+  "final_loss": 0.115,
+  "mean_clip_i": 0.5411
+ }
+}

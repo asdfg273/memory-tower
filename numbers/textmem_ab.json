@@ -1,0 +1,2102 @@
+{
+ "setup": {
+  "model": "qwen2.5-vl-7b",
+  "budget_chars": 600,
+  "k": 3,
+  "n_questions": 12,
+  "script": "tools_textmem_ab.py"
+ },
+ "criterion": "H10: 只有当 B_tower 在每个 lag 上都 > max(C_summary, D_vec, F_idf, G_sent) 才算塔存活",
+ "verdict": {
+  "status": "塔在文本场景判死",
+  "numbers": {
+   "B_tower": {
+    "100": 0.917,
+    "1000": 0.917,
+    "3000": 0.917
+   },
+   "G_sent": {
+    "1000": 1.0,
+    "3000": 1.0
+   },
+   "F_idf": {
+    "100": 0.917,
+    "1000": 1.0,
+    "3000": 0.917
+   },
+   "C_summary": {
+    "100": 0.25,
+    "1000": 0.083,
+    "3000": 0.083
+   },
+   "D_vec": {
+    "100": 0.25,
+    "1000": 0.167,
+    "3000": 0.083
+   },
+   "A_full": {
+    "100": 0.667,
+    "1000": 0.0,
+    "3000": 0.0
+   }
+  },
+  "why": "句子级 idf 检索（G_sent）用 38 字符上下文就拿到 1.000，比塔（42 字符 / 0.917）又准又便宜；十行 chunk 级（F_idf）也一样不低于塔。塔的相对劣势来自「键=文本前 24 字 + 40 槽闭式读出」这条存储-读出链路，而不是预算。"
+ },
+ "arms": {
+  "A_full": "整段历史（8x 预算后从最早处截断）",
+  "B_tower": "塔检索 top-3（fusion=gated，键=文本前 24 字）",
+  "C_summary": "滚动摘要（同预算，LLM 写）",
+  "D_vec": "向量检索 chunk（nomic-embed-text-v1.5）",
+  "F_idf": "idf 1+2 元检索 10 行 chunk（产品同款打分器）",
+  "G_sent": "idf 1+2 元检索单句（同打分器，句子粒度）",
+  "E_none": "无记忆（地板）"
+ },
+ "by_lag": {
+  "100": {
+   "A_full": {
+    "hit@1": 0.667,
+    "mean_ctx_chars": 5029.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提到“把那个脚本挪到 tools_ 前缀了”，但没有提供关于停车位置的具体信息或上下文。如果您能提供更多细节或者确认一下是否在讨论与代码相关的事务，我可以为您提供更",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据您提供的信息，可以推断出一些饮食偏好和限制：\n\n1. **坚果类食物**：小赵说他不能吃坚果类的食物。\n2. **花生油**：有人提到花生油算不算花生",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您说“下周三”要去哪里出差呢？如果您能提供具体的地点或行程安排，我可以为您提供更准确的信息。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到您的房子位于翠湖小区3号楼。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的医保卡放在翠湖小区3号楼书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到自己用的是 iPhone 15，蓝色的。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点去打球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据您提供的信息，“公司访客 Wi-Fi 的密码是 qd2024。” 这表明公司的访问网络使用的是“qd2024”作为密码，并且这个密码每季度会更换一次。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 5029
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是今年三月。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 5029
+     }
+    ]
+   },
+   "B_tower": {
+    "hit@1": 0.917,
+    "mean_ctx_chars": 42.1,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "咱家那只橘猫叫豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 39
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片内容与您的问题无关。如果您能提供关于“地铁”或“停车”的更多信息或者上下文，我会很乐意为您解答相关的问题。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 29
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 57
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要避免食用含有花生的食物或成分。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周三将去杭州出差。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 33
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "翠湖小区。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 40
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在你妈的包里或者书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "iPhone 15。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 50
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 42
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 60
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月份进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 38
+     }
+    ]
+   },
+   "C_summary": {
+    "hit@1": 0.25,
+    "mean_ctx_chars": 600.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "它叫“大橘”。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您的工号是A7402。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 600
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据对话内容，有同事建议在点食堂菜单上的食物时特别说明自己对花生和海鲜过敏。因此，在点餐时应该避免选择可能含有这些成分的食物，并向服务员明确告知自己的饮食限制以确保安全",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 600
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "杭州。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 600
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你租的房子在翠湖小区3号楼。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 600
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 600
+     }
+    ]
+   },
+   "D_vec": {
+    "hit@1": 0.25,
+    "mean_ctx_chars": 594.0,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 594
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要特别说明你对花生过敏，并且避免食用任何含有花生的产品或成分的食物。例如，在提到“花生炖猪手”时要格外小心，或者直接告知厨师你的饮食限制以确保安全。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 594
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到您的对象使用的是iPhone 13，所以您可以确认自己使用的也是类似的型号或版本的苹果智能手机。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 594
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 594
+     }
+    ]
+   },
+   "F_idf": {
+    "hit@1": 0.917,
+    "mean_ctx_chars": 507.2,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 427
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提到上周您的车停在C3层，那么根据对话内容推测，这可能是最近一次停车的位置。不过为了确保信息准确无误，建议您可以查看一下车辆管理系统或者停车场的记录以确认具体位置。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 427
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的工号是A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 456
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要特别说明你对花生过敏，并且避免食用任何含有花生的产品或成分。此外，既然空调很凉爽，最好也告知服务员你在穿外套以保暖的信息。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 411
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周五要去杭州出差，待两天。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 599
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到的翠湖小区和碧水小区都可能是您的居住地点。不过根据上下文信息，“老张住在翠湖对面”以及“金桥的房子太贵”，可以推测您可能更倾向于或已经搬到了",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 580
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的医保卡放在书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 587
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到的是 iPhone 15，蓝色的。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 431
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 585
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 560
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 435
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上一次体检是在今年三月。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 589
+     }
+    ]
+   },
+   "E_none": {
+    "hit@1": 0.0,
+    "mean_ctx_chars": 0.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "不知到。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您需要提供更多的上下文信息或者图片来帮助定位您的车辆位置。仅凭文字无法确定具体停放地点。如果您能描述一下周围环境、地标或其他相关细节，我会尽力为您提供更准确的答案。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片中没有显示任何关于“工号”的信息或文字。如果您需要查询您的工号，请提供更具体的上下文或者直接告知相关系统以获取准确的工号信息。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "在点餐时应该避免选择那些看起来不卫生、食材不明或者有异味的食物。同时也要注意食物的份量和价格是否合理，以及是否有过敏原提示等信息。确保所选菜品符合个人口味和",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您需要提供更多信息才能给出准确的回答。例如，“下周三是哪一天？”、“您在哪里？”或者“您的行程是什么？”等信息可以帮助我为您提供更具体的答案。如果您能提供更多上下文或问题细节，我会很乐意",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片内容与文字信息无关，无法从图片中提取关于所居住小区的信息。如果您能提供更具体的问题或描述您的环境，我会很乐意帮助您解答。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片中没有显示任何关于设备的信息，所以我无法确定您使用的具体型号或品牌手机。如果您能提供更具体的细节或者截图内容，我会很乐意帮助您识别您的手机类型。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片信息中没有关于“每周几次打羽毛球”的具体数据或上下文线索。如果您能提供更详细的信息或者直接给出答案，我会很乐意为您解答相关的问题。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的信息中没有关于体检的具体日期或时间记录。如果您需要了解具体的体检日期，请查阅您的医疗档案或者联系为您提供医疗服务的机构以获取准确的信息。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 0
+     }
+    ]
+   }
+  },
+  "1000": {
+   "A_full": {
+    "hit@1": 0.0,
+    "mean_ctx_chars": 5009.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "抱歉，您提供的信息中没有提到关于停车位置的内容，所以我无法回答您的问题。如果您能提供更多信息或上下文，我会很乐意帮助您解答。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的信息中没有提到您的工号。如果您能提供更多的上下文或直接告知您的工号，我将很乐意为您查找相关信息。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "根据您提供的对话内容，似乎没有提到与餐饮或菜单选择相关的具体信息。如果您有特定的菜品或者饮食偏好（如避免辛辣、过敏等）需要告知，请直接说明以便为您提供更准确的回答。否则，",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提到的“那个脚本”具体指什么内容或上下文呢？如果没有提供足够的信息来识别具体的场景或对象，“那个脚本”的含义可能因人而异或者无法确定。如果您能提供更多关于这个",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您使用的是华为P40 Pro+手机。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "你没有提供关于自己何时打羽毛球的信息，无法回答这个问题。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "很抱歉，您提供的对话内容中并没有提及任何关于公司Wi-Fi密码的信息。这些对话主要围绕着日常的一些琐事和工作状态展开，并未包含具体的网络设置或安全信息。如果您需要了解公司的Wi-Fi",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 5009
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您之前提到过“去年10月份”，所以您的上一次体检大约是在2023年10月左右进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 5009
+     }
+    ]
+   },
+   "B_tower": {
+    "hit@1": 0.917,
+    "mean_ctx_chars": 42.1,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "咱家那只橘猫叫豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 39
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片内容与您的问题无关。如果您能提供关于“地铁”或“停车”的更多信息或者上下文，我会很乐意为您解答相关的问题。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 29
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 57
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要避免食用含有花生的食物或成分。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周三将去杭州出差。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 33
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "翠湖小区。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 40
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在你妈的包里或者书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "iPhone 15。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 50
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 42
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 60
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月份进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 38
+     }
+    ]
+   },
+   "C_summary": {
+    "hit@1": 0.083,
+    "mean_ctx_chars": 257.0,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "它有好几种称呼，比如豆豆和大橘，都是咱们家的橘猫。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，您提供的信息中没有提及关于停车位置的内容。如果您能提供更多信息或上下文，我会更乐意帮助您解答。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，您提供的信息中没有提及您的工号。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，因为对话记录中没有提及任何关于点餐或饮食的信息。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，您提供的信息中没有提及关于“下周三”的具体行程或地点安排。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，对话中没有提及关于您所居住的小区信息。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，这与对话内容无关。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，对话记录中没有提及使用哪种型号或品牌的手机。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，对话中没有提及关于您打羽毛球的信息或频率。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，您提供的信息中没有提及任何关于牙医或其姓名的内容。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道，因为提供的信息中没有提及公司的Wi-Fi密码或任何相关网络设置内容。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 257
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "抱歉，您提供的对话记录中没有提及任何关于体检的信息或时间，所以我无法回答这个问题。如果您有其他相关的问题或者需要更多信息，请随时告诉我！",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 257
+     }
+    ]
+   },
+   "D_vec": {
+    "hit@1": 0.167,
+    "mean_ctx_chars": 588.0,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到的“咱家那只橘猫”可能指代不同的猫咪或有不同的称呼。根据之前的对话内容：\n- 您说自家养了一只橘猫，并取名为豆豆。\n- 同事小王也",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 588
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据您提供的信息，可以推断出一些饮食偏好或限制：\n\n1. **对芒果过敏**：避免食用芒果及其制品。\n2. **坚果类食物不能吃**：包括花生在内的所有坚果。\n\n因此，在",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 588
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 588
+     }
+    ]
+   },
+   "F_idf": {
+    "hit@1": 1.0,
+    "mean_ctx_chars": 492.5,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到自家养了一只橘猫，并且给它取名为豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 590
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你昨天说你的车停在 B2 层 37 号车位，所以今天的停车位置应该是相同的：B2 层 37 号车位。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 442
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的工号是 A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 442
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您需要避免食用花生和海鲜。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 420
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您下周五去杭州出差，并且待两天。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 600
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您租的房子位于翠湖小区，3号楼。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 600
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 388
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您使用的是iPhone 15，蓝色的。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 413
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 587
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "陈医生。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 405
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 424
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上一次体检是在今年三月。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 599
+     }
+    ]
+   },
+   "G_sent": {
+    "hit@1": 1.0,
+    "mean_ctx_chars": 42.2,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "咱家那只橘猫叫豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据您提供的信息，您的车辆目前停放位置是B2层37号车位。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 49
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 57
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你应该避免食用任何含有花生的菜品或成分。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 36
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周三将去杭州出差。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 33
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "翠湖小区。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 40
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 38
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "iPhone 15。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 48
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 32
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 36
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 60
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月份进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 38
+     }
+    ]
+   },
+   "E_none": {
+    "hit@1": 0.0,
+    "mean_ctx_chars": 0.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "不知到。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您需要提供更多的上下文信息或者图片来帮助定位您的车辆位置。仅凭文字无法确定具体停放地点。如果您能描述一下周围环境、地标或其他相关细节，我会尽力为您提供更准确的答案。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片中没有显示任何关于“工号”的信息或文字。如果您需要查询您的工号，请提供更具体的上下文或者直接告知相关系统以获取准确的工号信息。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "在点餐时应该避免选择那些看起来不卫生、食材不明或者有异味的食物。同时也要注意食物的份量和价格是否合理，以及是否有过敏原提示等信息。确保所选菜品符合个人口味和",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您需要提供更多信息才能给出准确的回答。例如，“下周三是哪一天？”、“您在哪里？”或者“您的行程是什么？”等信息可以帮助我为您提供更具体的答案。如果您能提供更多上下文或问题细节，我会很乐意",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片内容与文字信息无关，无法从图片中提取关于所居住小区的信息。如果您能提供更具体的问题或描述您的环境，我会很乐意帮助您解答。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片中没有显示任何关于设备的信息，所以我无法确定您使用的具体型号或品牌手机。如果您能提供更具体的细节或者截图内容，我会很乐意帮助您识别您的手机类型。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片信息中没有关于“每周几次打羽毛球”的具体数据或上下文线索。如果您能提供更详细的信息或者直接给出答案，我会很乐意为您解答相关的问题。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的信息中没有关于体检的具体日期或时间记录。如果您需要了解具体的体检日期，请查阅您的医疗档案或者联系为您提供医疗服务的机构以获取准确的信息。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 0
+     }
+    ]
+   }
+  },
+  "3000": {
+   "A_full": {
+    "hit@1": 0.0,
+    "mean_ctx_chars": 5035.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "它名字叫做“小橙”。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您需要提供更多的上下文信息才能回答您的问题。例如，“哪里”指的是什么位置（如公司、家）以及“谁”的车停放在哪里。如果您能提供更多细节或上下文，我会很乐意帮助您查找",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您的工号是1234567890。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "根据您提供的信息和上下文线索，似乎没有直接提到关于“点菜”或饮食方面的建议。不过，在日常生活中避免一些常见误区可以帮助改善健康状况：\n\n1. **减少加工食品摄入**：尽量选择",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "抱歉，您提供的信息中没有提到关于“下周三”的任何内容或上下文线索，所以我无法回答您关于“下周三去哪？”的问题。如果您能提供更多信息或者更具体的背景，我会很乐意帮助您",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提到的“那个脚本”具体指什么内容或上下文呢？如果没有提供足够的信息来识别具体的脚本或项目名称，“工具_前缀”的含义也可能有所不同。如果您能提供更多关于这个脚本的信息",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您使用的是华为P40 Pro+手机。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "你没有提供关于自己多久去一次羽毛球的信息，所以无法回答这个问题。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "很抱歉，您提供的信息中没有提到任何关于公司Wi-Fi密码的内容。如果您有其他问题或需要进一步的帮助，请随时告诉我！",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 5035
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您之前提到过“去年十一月”，这可能是指您的上一次体检时间是2019年11月份。如果您需要更精确的信息或有其他问题，请随时告知！",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 5035
+     }
+    ]
+   },
+   "B_tower": {
+    "hit@1": 0.917,
+    "mean_ctx_chars": 42.1,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "咱家那只橘猫叫豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 39
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片内容与您的问题无关。如果您能提供关于“地铁”或“停车”的更多信息或者上下文，我会很乐意为您解答相关的问题。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 29
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 57
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要避免食用含有花生的食物或成分。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周三将去杭州出差。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 33
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "翠湖小区。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 40
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在你妈的包里或者书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "iPhone 15。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 50
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 42
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 60
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月份进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 38
+     }
+    ]
+   },
+   "C_summary": {
+    "hit@1": 0.083,
+    "mean_ctx_chars": 419.0,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "它有好几种称呼呢，比如豆豆（一只橘猫）、大橘（另一只流浪的橘猫）等等。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道您指的是什么位置或者具体的上下文呢？如果您能提供更详细的信息或背景，我会尽力帮助您查找。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 419
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 419
+     }
+    ]
+   },
+   "D_vec": {
+    "hit@1": 0.083,
+    "mean_ctx_chars": 429.0,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 429
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 429
+     }
+    ]
+   },
+   "F_idf": {
+    "hit@1": 0.917,
+    "mean_ctx_chars": 503.4,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 397
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上周把车停在 C3 层，同事的车是 B2 层 38 号，老张的是 B1 层 12 号，访客车位在 A 区有",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 430
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您的工号是 A7391，入职两年了。新来的实习生工号是 A7402。财务的工号前缀是 F 开头。工号 A7311 那",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 457
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你需要避免食用花生及其制品、海鲜以及坚果类食物。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 398
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您下周一要去杭州出差，待两天。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 570
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您租的房子在翠湖小区3号楼。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 387
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 596
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您提到的是iPhone 15，并且是蓝色的型号。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 598
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 585
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "陈医生。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 596
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 432
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月，血脂偏高。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 595
+     }
+    ]
+   },
+   "G_sent": {
+    "hit@1": 1.0,
+    "mean_ctx_chars": 42.8,
+    "rows": [
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "咱家那只橘猫叫豆豆。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "根据您提供的信息，您的车辆目前停放位置是B2层37号车位。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 49
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "A7391。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 57
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你应该避免食用任何含有花生的菜品或成分。",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 36
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你下周三要出差去杭州，并且在那里停留两天。",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 33
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "翠湖小区。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 40
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "医保卡放在书房第二层抽屉里。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 38
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "iPhone 15。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 48
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你每周四晚上七点打羽毛球。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 39
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "你的牙医姓陈。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 36
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "qd2024。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 60
+     },
+     {
+      "hit": true,
+      "refuse": false,
+      "answer": "您上次体检是在今年三月份进行的。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 38
+     }
+    ]
+   },
+   "E_none": {
+    "hit@1": 0.0,
+    "mean_ctx_chars": 0.0,
+    "rows": [
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "不知到。",
+      "q": "咱家那只橘猫叫什么？",
+      "target": "豆豆",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您需要提供更多的上下文信息或者图片来帮助定位您的车辆位置。仅凭文字无法确定具体停放地点。如果您能描述一下周围环境、地标或其他相关细节，我会尽力为您提供更准确的答案。",
+      "q": "我今天车停哪儿了？",
+      "target": "B2",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片中没有显示任何关于“工号”的信息或文字。如果您需要查询您的工号，请提供更具体的上下文或者直接告知相关系统以获取准确的工号信息。",
+      "q": "我的工号是多少？",
+      "target": "A7391",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "在点餐时应该避免选择那些看起来不卫生、食材不明或者有异味的食物。同时也要注意食物的份量和价格是否合理，以及是否有过敏原提示等信息。确保所选菜品符合个人口味和",
+      "q": "点菜的时候我要避开什么？",
+      "target": "花生",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您需要提供更多信息才能给出准确的回答。例如，“下周三是哪一天？”、“您在哪里？”或者“您的行程是什么？”等信息可以帮助我为您提供更具体的答案。如果您能提供更多上下文或问题细节，我会很乐意",
+      "q": "下周三我去哪儿？",
+      "target": "杭州",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片内容与文字信息无关，无法从图片中提取关于所居住小区的信息。如果您能提供更具体的问题或描述您的环境，我会很乐意帮助您解答。",
+      "q": "我租的房子在哪个小区？",
+      "target": "翠湖",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "医保卡放哪了？",
+      "target": "抽屉",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "您提供的图片中没有显示任何关于设备的信息，所以我无法确定您使用的具体型号或品牌手机。如果您能提供更具体的细节或者截图内容，我会很乐意帮助您识别您的手机类型。",
+      "q": "我用的什么手机？",
+      "target": "iPhone",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的图片信息中没有关于“每周几次打羽毛球”的具体数据或上下文线索。如果您能提供更详细的信息或者直接给出答案，我会很乐意为您解答相关的问题。",
+      "q": "我每周几打羽毛球？",
+      "target": "周四",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "我的牙医姓什么？",
+      "target": "陈",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": true,
+      "answer": "不知道。",
+      "q": "公司 Wi-Fi 密码是什么？",
+      "target": "qd2024",
+      "ctx_chars": 0
+     },
+     {
+      "hit": false,
+      "refuse": false,
+      "answer": "您提供的信息中没有关于体检的具体日期或时间记录。如果您需要了解具体的体检日期，请查阅您的医疗档案或者联系为您提供医疗服务的机构以获取准确的信息。",
+      "q": "我上次体检是什么时候？",
+      "target": "三月",
+      "ctx_chars": 0
+     }
+    ]
+   }
+  }
+ }
+}

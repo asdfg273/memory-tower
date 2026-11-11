@@ -1,0 +1,53 @@
+{
+ "experiment": "B: channel-capacity experiment (W x frozen/LoRA + controls + text baseline)",
+ "date": "2026-11-12",
+ "script": "tools_album_channel.py",
+ "setup": {
+  "backbone": "SD1.5 fp16, UNet frozen unless LoRA",
+  "data": "CelebA via flwrlabs/celeba, 6 identities x 4 refs/5 targets, 24 training images",
+  "eval": "2 held-out identities x 4 scenes (CLIP-I vs 3 other real photos of that identity), 512x512, DDIM 20 steps, cfg 7.5",
+  "steps": 800,
+  "lora": "rank 8, alpha 16, cross-attn (attn2) q/k/v/out only, 44758208 params, fp32 adapters",
+  "readout": "Head2(1280->768 GELU -> mean pool over 64 tokens -> MLP -> W x 768 context tokens)",
+  "note": "CLIP-I scale: same image 1.0, different person ~0.52 on this metric"
+ },
+ "grid_clip_i": {
+  "w8_frozen": 0.4411, "w8_lora": 0.4698,
+  "w32_frozen": 0.4382, "w32_lora": 0.4616,
+  "w128_frozen": 0.4151, "w128_lora": 0.4484
+ },
+ "grid_clip_t": {
+  "w8_frozen": 0.3105, "w8_lora": 0.2925,
+  "w32_frozen": 0.3054, "w32_lora": 0.2912,
+  "w128_frozen": 0.2962, "w128_lora": 0.2948
+ },
+ "controls_w128_lora": {
+  "real": 0.4484, "zero": 0.4411, "rand": 0.4366
+ },
+ "text_baseline": {
+  "mean_clip_i": 0.5131,
+  "mean_clip_t": 0.3486,
+  "desc": "one human-written sentence per identity appended to the scene prompt"
+ },
+ "separability": {
+  "cross_centroid": 0.0118,
+  "intra_spread": 0.2799,
+  "ratio": 0.042,
+  "nearest_centroid_acc": 0.55,
+  "n_per_id": 10,
+  "note": "chance = 0.50; channel carries essentially no identity signal"
+ },
+ "verdict": {
+  "H9": "triggered - LoRA + W=128 (0.4484) does not beat text baseline (0.5131); memory injection declared dead at this compute tier",
+  "bandwidth": "not the constraint: 8 -> 128 tokens monotonically hurts (-0.026 frozen, -0.021 lora)",
+  "gradient": "LoRA helps consistently but only +0.023..+0.033",
+  "readout_use": "real - zero = +0.0073, real - rand = +0.0118: the readout contributes almost nothing",
+  "prompt_adherence": "text baseline highest CLIP-T 0.3486; memory arms 0.29-0.31"
+ },
+ "files": {
+  "grid": "_ab_tmp/channel/grid.json",
+  "controls": "_ab_tmp/channel/ctrl.json",
+  "text": "_ab_tmp/channel/text.json",
+  "sep": "_ab_tmp/channel/sep.json"
+ }
+}
