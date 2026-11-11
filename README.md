@@ -20,9 +20,12 @@
 | 9 | **容量与深度都不是瓶颈**，语义不变性在编码器里就丢了 | 交付 m=256 下 480 条全中（1.000）；堆到 8 层零收益；改写从 .767 训到 .958 但重度改写仍 **.062**，判别式训练最多 .448 | §5.14 |
 | 10 | **扩散侧封板**：信道不是窄，是没用 | W 8→128 两种消费端单调变差；可分性 .042、留一准确率 **.55**（机会 .50）；最好记忆臂 .4698 < 一句纯文本 **.5131** | §5.16 |
 | 11 | **文本侧封板**：塔输给不压缩的直接检索 | 句子级 idf 用 **38 字符**拿 12/12，塔用 **42 字符**拿 11/12；十行块 RAG 也不输塔；滚动摘要 .250→.083→.083 | §5.17 |
+| 12 | **真实语料第三次封板**：塔的检索路径是死代码 | 1343 条真实会话 / 94.8 万字符，最强臂"整条消息 + 朴素二合" **.526**，塔纯读出 **1/38**（.026，与随机不可区分）；默认 `gated` 与词面逐位相同、白付 **5.7×** 延迟 | §5.18 |
+| 13 | **容量定律是二维的**：`N/m` × 单元长度；粒度与打分器强交互 | 短单元 h=.11 → .342，长单元 h=.39 → **.079**；切句让 idf **+.184**、让二合 **−.079** | §5.18.3、§5.18.5 |
+| 14 | **H11 已验收**（224 条冻结题集，预注册）：键索引不够用，读出层是负贡献 | 键 KNN（白化，不用 `W`）**.1518** 仍输三个零依赖词面方法（二合 .3661 / idf_sent .2143 / idf_msg .1920）；塔真正的读出 `W=(KᵀK+λI)⁻¹KᵀZ` 只有 **.0179**，比不用它低 **8.5×** | §5.18.9 |
 
 一句话定位：**它是一个可从文本挂载的记忆运行时，不是一个 RAG 卖点，更不是"更强的记忆结构"；
-在单卡 8 GB 这个档位上，它的性价比在扩散与文本两条线上都是负的，本文交付的是边界与机制。**
+在单卡 8 GB 这个档位上，它的性价比在扩散、构造语料、真实对话三条线上都是负的，本文交付的是边界与机制。**
 
 ## 目录
 
@@ -32,7 +35,7 @@ output/
 ├─ PAPER_TITANS_TOWER.md         ← 主论文（含参考文献 [R1]–[R27]）
 ├─ PAPER_FULL_LOG.md             ← 原始实验记录（330 KB，未整理，仅存档）
 ├─ references.bib                ← 27 条参考文献的 BibTeX
-├─ reports/                      ← 十份关键报告
+├─ reports/                      ← 十一份关键报告
 │   ├─ memory_retrieval_ab.md    ← 检索层对照实验全过程（C 阶段 / A′ / 自描述化 / embedding / 问法键 / TTL）
 │   ├─ TOWER_MECHANISM.md        ← 塔的机制与结构
 │   ├─ TOWER_SLOTDEPTH.md        ← 容量与不变性：T131–T133 三次端到端实验
@@ -40,6 +43,7 @@ output/
 │   ├─ TOWER_DEPTH.md            ← 深度塔：深度是多项式滤波，不是容量
 │   ├─ ALBUM_TOWER.md            ← SD1.5 相册身份一致性：免训练注入 + 小投影头 + 真人数据 + 信道实验（H9）
 │   ├─ TEXT_MEMORY_AB.md         ← 文本记忆七臂对照：塔输给直接检索（H10）
+│   ├─ SESSION_RECALL.md         ← 真实会话检索（H11）：塔是死代码 / 粒度×打分器交互 / 二维容量相图
 │   ├─ TOWER_VS_RAG.md           ← 与 RAG 的全维度对照
 │   ├─ INSTRUMENT_FAILURES.md    ← 仪器失效清单（本项目最可迁移的产出）
 │   └─ HANDOFF.md                ← 交接摘要
@@ -69,6 +73,12 @@ output/
 │   ├─ tools_album_scaling.py    ← 数据规模 × 参数 × 泛化诊断（§5.15）
 │   ├─ tools_album_channel.py    ← 信道容量实验：2×3 网格 / 三对照 / 纯文本基线 / 可分性（§5.16）
 │   ├─ tools_textmem_ab.py       ← 文本记忆七臂对照 A–G（§5.17）
+│   ├─ tools_session_recall.py   ← 真实会话七臂检索（§5.18）
+│   ├─ tools_session_recall_tower_curve.py ← 塔在真实语料上的规模曲线
+│   ├─ tools_session_recall_sweep.py ← 前缀扫描（弱，仅趋势）
+│   ├─ tools_session_recall_accept.py ← §5.18.9 验收（四读出 × 三基线 + bootstrap + McNemar）
+│   ├─ tools_session_recall_keyfix.py ← 键空间核对与白化（H12）
+│   ├─ tools_session_queries_batch.py ← 批量生成冻结题集（DeepSeek R1 7B）
 │   ├─ tower_runtime.py          ← 塔运行时（验收自检）
 │   ├─ tools_tower_T3.py         ← 快速权重核（tower_runtime 的依赖）
 │   ├─ longctx.py                ← 分块 prefill 长上下文路径
@@ -86,7 +96,10 @@ output/
 │   ├─ album_head_real.json      ← 小投影头（CelebA）
 │   ├─ album_scaling.json        ← §5.15 数据规模曲线（4/12/24 身份 + small-head 对照）
 │   ├─ album_channel.json        ← §5.16 信道实验四组子文件汇总
-│   └─ textmem_ab.json           ← §5.17 文本记忆七臂 × 3 lag（含判决）
+│   ├─ textmem_ab.json           ← §5.17 文本记忆七臂 × 3 lag（含判决）
+│   ├─ session_recall.json       ← §5.18 真实会话七臂 + 塔容量曲线 + 前缀扫描 + 判决
+│   ├─ session_accept_224.json   ← §5.18.9 验收：224 题冻结集上四种塔读出 vs 三种词面基线
+│   └─ gold_final_224.json       ← 同一批冻结题集（sha256 7ef987d9…，可直接复跑验收）
 └─ data/
     └─ memory_selfdesc.json      ← 28 条真实记忆 → 自描述句 的映射（实验数据集）
 ```

@@ -1,0 +1,385 @@
+{
+ "corpus": {
+  "messages": 1343,
+  "chars": 948264
+ },
+ "gold": 38,
+ "queries_generated_by": "qwen2.5-vl-7b（从金句反推问题，要求改措辞）",
+ "protocol": {
+  "unit_msg": "整条消息为一个检索单元",
+  "unit_sent": "句子为一个单元（>=12 字），按消息取最高分",
+  "scorers": "bigram = tools_tower_memory.lexical_score（朴素二重合系数）；idf = memory_service.text_score_idf（w_unigram=0.5）；vec = nomic-embed-text-v1.5 余弦；tower = m=256 闭式写入 + 逐条 cos（fusion=tower）",
+  "answer_level": "命中任一同义消息（按稀有 token 判定，中位 2 条）"
+ },
+ "arms": {
+  "bigram_msg": {
+   "metrics": {
+    "hit@1": 0.5263,
+    "hit@3": 0.6579,
+    "hit@5": 0.6579,
+    "mrr": 0.6033,
+    "miss": 6
+   },
+   "answer_level": {
+    "hit@1": 0.5263,
+    "hit@3": 0.6579,
+    "hit@5": 0.6579,
+    "mrr": 0.6069,
+    "miss": 3
+   },
+   "ms_per_query": 117.3
+  },
+  "bigram_sent": {
+   "metrics": {
+    "hit@1": 0.4474,
+    "hit@3": 0.5789,
+    "hit@5": 0.6053,
+    "mrr": 0.5363,
+    "miss": 9
+   },
+   "answer_level": {
+    "hit@1": 0.4737,
+    "hit@3": 0.5789,
+    "hit@5": 0.6579,
+    "mrr": 0.5623,
+    "miss": 4
+   },
+   "ms_per_query": 179.3
+  },
+  "idf_msg": {
+   "metrics": {
+    "hit@1": 0.2895,
+    "hit@3": 0.4211,
+    "hit@5": 0.4474,
+    "mrr": 0.3599,
+    "miss": 17
+   },
+   "answer_level": {
+    "hit@1": 0.2895,
+    "hit@3": 0.4211,
+    "hit@5": 0.4474,
+    "mrr": 0.3616,
+    "miss": 14
+   },
+   "ms_per_query": 496.6
+  },
+  "idf_sent": {
+   "metrics": {
+    "hit@1": 0.4737,
+    "hit@3": 0.6053,
+    "hit@5": 0.6053,
+    "mrr": 0.5525,
+    "miss": 9
+   },
+   "answer_level": {
+    "hit@1": 0.5,
+    "hit@3": 0.6053,
+    "hit@5": 0.6053,
+    "mrr": 0.5707,
+    "miss": 5
+   },
+   "ms_per_query": 893.9
+  },
+  "vec": {
+   "metrics": {
+    "hit@1": 0.0526,
+    "hit@3": 0.1316,
+    "hit@5": 0.2105,
+    "mrr": 0.1174,
+    "miss": 20
+   },
+   "answer_level": {
+    "hit@1": 0.0526,
+    "hit@3": 0.1316,
+    "hit@5": 0.2105,
+    "mrr": 0.1174,
+    "miss": 20
+   },
+   "ms_per_query": 129.3
+  },
+  "tower_gated": {
+   "metrics": {
+    "hit@1": 0.5263,
+    "hit@3": 0.6579,
+    "hit@5": 0.6579,
+    "mrr": 0.6015,
+    "miss": 8
+   },
+   "answer_level": {
+    "hit@1": 0.5263,
+    "hit@3": 0.6579,
+    "hit@5": 0.6579,
+    "mrr": 0.6036,
+    "miss": 7
+   },
+   "ms_per_query": 671.6,
+   "note": "tower_gated == bigram_msg（gated 在词面有信号时按词面排，塔不参与）"
+  },
+  "tower_tower": {
+   "metrics": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0263,
+    "hit@5": 0.0263,
+    "mrr": 0.0307,
+    "miss": 36
+   },
+   "answer_level": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0526,
+    "hit@5": 0.0526,
+    "mrr": 0.0395,
+    "miss": 35
+   },
+   "ms_per_query": 317.0,
+   "note": "纯塔闭式读出"
+  }
+ },
+ "tower_capacity_curve": {
+  "100": {
+   "N": 100,
+   "h": 0.39,
+   "metrics": {
+    "hit@1": 0.0789,
+    "hit@3": 0.1842,
+    "hit@5": 0.1842,
+    "mrr": 0.136,
+    "miss": 23
+   },
+   "ms_per_query": 19.2,
+   "build_s": 10.7
+  },
+  "200": {
+   "N": 200,
+   "h": 0.78,
+   "metrics": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0526,
+    "hit@5": 0.1053,
+    "mrr": 0.0617,
+    "miss": 29
+   },
+   "ms_per_query": 50.9,
+   "build_s": 4.5
+  },
+  "400": {
+   "N": 400,
+   "h": 1.56,
+   "metrics": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0263,
+    "hit@5": 0.0526,
+    "mrr": 0.0428,
+    "miss": 32
+   },
+   "ms_per_query": 100.5,
+   "build_s": 4.8
+  },
+  "800": {
+   "N": 800,
+   "h": 3.12,
+   "metrics": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0263,
+    "hit@5": 0.0263,
+    "mrr": 0.0331,
+    "miss": 33
+   },
+   "ms_per_query": 210.5,
+   "build_s": 5.7
+  },
+  "1343": {
+   "N": 1343,
+   "h": 5.25,
+   "metrics": {
+    "hit@1": 0.0263,
+    "hit@3": 0.0263,
+    "hit@5": 0.0263,
+    "mrr": 0.0307,
+    "miss": 36
+   },
+   "ms_per_query": 326.2,
+   "build_s": 7.1
+  }
+ },
+ "prefix_sweep": {
+  "400": {
+   "messages": 400,
+   "golds": 3,
+   "chars": 280264,
+   "idf_msg": {
+    "strict": {
+     "hit@1": 0.3333,
+     "hit@3": 0.6667,
+     "hit@5": 0.6667,
+     "mrr": 0.5111,
+     "miss": 0
+    },
+    "answer_level": {
+     "hit@1": 0.3333,
+     "hit@3": 0.6667,
+     "hit@5": 0.6667,
+     "mrr": 0.5278,
+     "miss": 0
+    },
+    "units": 400,
+    "ms_per_query": 130.3
+   },
+   "idf_sent": {
+    "strict": {
+     "hit@1": 0.6667,
+     "hit@3": 1.0,
+     "hit@5": 1.0,
+     "mrr": 0.8333,
+     "miss": 0
+    },
+    "answer_level": {
+     "hit@1": 1.0,
+     "hit@3": 1.0,
+     "hit@5": 1.0,
+     "mrr": 1.0,
+     "miss": 0
+    },
+    "units": 5981,
+    "ms_per_query": 252.0
+   },
+   "vec": {
+    "strict": {
+     "hit@1": 0.0,
+     "hit@3": 0.3333,
+     "hit@5": 0.3333,
+     "mrr": 0.1639,
+     "miss": 0
+    },
+    "answer_level": {
+     "hit@1": 0.0,
+     "hit@3": 0.3333,
+     "hit@5": 0.3333,
+     "mrr": 0.1639,
+     "miss": 0
+    },
+    "ms_per_query": 62.4
+   }
+  },
+  "800": {
+   "messages": 800,
+   "golds": 18,
+   "chars": 580302,
+   "idf_msg": {
+    "strict": {
+     "hit@1": 0.2222,
+     "hit@3": 0.3889,
+     "hit@5": 0.3889,
+     "mrr": 0.2959,
+     "miss": 8
+    },
+    "answer_level": {
+     "hit@1": 0.2222,
+     "hit@3": 0.3889,
+     "hit@5": 0.3889,
+     "mrr": 0.2987,
+     "miss": 8
+    },
+    "units": 800,
+    "ms_per_query": 293.4
+   },
+   "idf_sent": {
+    "strict": {
+     "hit@1": 0.5,
+     "hit@3": 0.6667,
+     "hit@5": 0.6667,
+     "mrr": 0.5962,
+     "miss": 3
+    },
+    "answer_level": {
+     "hit@1": 0.5556,
+     "hit@3": 0.6667,
+     "hit@5": 0.6667,
+     "mrr": 0.6291,
+     "miss": 2
+    },
+    "units": 12652,
+    "ms_per_query": 609.8
+   },
+   "vec": {
+    "strict": {
+     "hit@1": 0.0556,
+     "hit@3": 0.2222,
+     "hit@5": 0.2778,
+     "mrr": 0.166,
+     "miss": 5
+    },
+    "answer_level": {
+     "hit@1": 0.0556,
+     "hit@3": 0.2222,
+     "hit@5": 0.2778,
+     "mrr": 0.1676,
+     "miss": 4
+    },
+    "ms_per_query": 91.2
+   }
+  },
+  "1343": {
+   "messages": 1343,
+   "golds": 38,
+   "chars": 948264,
+   "idf_msg": {
+    "strict": {
+     "hit@1": 0.2895,
+     "hit@3": 0.4211,
+     "hit@5": 0.4474,
+     "mrr": 0.3599,
+     "miss": 17
+    },
+    "answer_level": {
+     "hit@1": 0.2895,
+     "hit@3": 0.4211,
+     "hit@5": 0.4474,
+     "mrr": 0.3616,
+     "miss": 14
+    },
+    "units": 1343,
+    "ms_per_query": 507.4
+   },
+   "idf_sent": {
+    "strict": {
+     "hit@1": 0.4737,
+     "hit@3": 0.6053,
+     "hit@5": 0.6053,
+     "mrr": 0.5525,
+     "miss": 9
+    },
+    "answer_level": {
+     "hit@1": 0.5,
+     "hit@3": 0.6053,
+     "hit@5": 0.6053,
+     "mrr": 0.5693,
+     "miss": 5
+    },
+    "units": 18533,
+    "ms_per_query": 863.6
+   },
+   "vec": {
+    "strict": {
+     "hit@1": 0.0526,
+     "hit@3": 0.1316,
+     "hit@5": 0.2105,
+     "mrr": 0.1174,
+     "miss": 20
+    },
+    "answer_level": {
+     "hit@1": 0.0526,
+     "hit@3": 0.1316,
+     "hit@5": 0.2105,
+     "mrr": 0.1174,
+     "miss": 20
+    },
+    "ms_per_query": 134.9
+   }
+  }
+ },
+ "verdict": {
+  "H11": "否 —— 纯塔读出在任何规模下都打不过词面；gated 默认值等于词面兜底",
+  "best_hit@1": 0.5263,
+  "best_arm": "bigram_msg（整条消息的朴素二重合）"
+ }
+}
